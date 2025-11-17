@@ -1,19 +1,29 @@
 "use client";
 
-import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+  const supabase = createClientComponentClient();
 
-  async function handleLogin(e: any) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
     console.log(error || "Login OK");
+
+    if (!error && data.session) {
+      console.log("Role côté client :", data.session.user.user_metadata?.role);
+      router.push("/tasks");
+    }
   }
 
   return (

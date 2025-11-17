@@ -1,23 +1,37 @@
 "use client";
 
-import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+  const supabase = createClientComponentClient();
 
-  async function handleLogin(e: any) {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.auth.signUp({
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          role: "user",
+        },
+      },
     });
-    console.log(error || "Login OK");
+
+    console.log(error || "Register OK");
+
+    if (!error) {
+      router.push("/auth/login");
+    }
   }
 
   return (
-    <form onSubmit={handleLogin} className="border p-4">
+    <form onSubmit={handleRegister} className="border p-4">
       <input
         type="email"
         placeholder="Email"
@@ -31,7 +45,7 @@ export default function LoginPage() {
         onChange={(e) => setPassword(e.target.value)}
       />
       <button type="submit" className="border p-2">
-        Connexion
+        Inscription
       </button>
     </form>
   );
