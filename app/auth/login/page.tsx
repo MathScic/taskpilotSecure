@@ -20,6 +20,10 @@ export default function LoginPage() {
 
     console.log(error || "Login OK");
 
+    if (data.session) {
+      console.log("Rôle détecté :", data.session.user.user_metadata.role);
+    }
+
     if (!error && data.session) {
       console.log("Role côté client :", data.session.user.user_metadata?.role);
       router.push("/tasks");
