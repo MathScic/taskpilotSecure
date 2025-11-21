@@ -1,13 +1,12 @@
+import type { Metadata } from "next";
 import "./globals.css";
-import { Inter } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { Sidebar } from "./components/Sidebar";
+import { PageShell } from "./components/PageShell";
 
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata = {
-  title: "MS SaaS Starter",
+export const metadata: Metadata = {
+  title: "TaskPilot Secure",
   description:
-    "Starter Next.js 15 + Tailwind + shadcn + Framer par Mathieu Scicluna",
+    "SaaS de tâches avec sécurité avancée (RBAC, RLS, audit, protections anti-abus).",
 };
 
 export default function RootLayout({
@@ -16,13 +15,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
-      <body
-        className={`${inter.className} min-h-screen flex flex-col bg-white text-gray-900`}
-      >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <main className="flex-grow">{children}</main>
-        </ThemeProvider>
+    <html lang="fr">
+      <body className="min-h-screen bg-neutral-50">
+        <div className="flex min-h-screen">
+          {/* Sidebar desktop */}
+          <aside className="hidden md:block">
+            <Sidebar />
+          </aside>
+
+          {/* Sidebar mobile */}
+          <div className="md:hidden w-full">
+            <Sidebar />
+          </div>
+
+          {/* Contenu principal avec transitions fluide */}
+          <main className="flex-1 px-4 py-6 md:px-8">
+            <div className="max-w-3xl mx-auto">
+              <PageShell>{children}</PageShell>
+            </div>
+          </main>
+        </div>
       </body>
     </html>
   );
