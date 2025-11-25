@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "./components/Sidebar";
 import { PageShell } from "./components/PageShell";
+import RoleBadge from "./components/RoleBadge";
 
 export const metadata: Metadata = {
   title: "TaskPilot Secure",
@@ -35,6 +36,7 @@ export default function RootLayout({
             </div>
           </main>
         </div>
+        <RoleBadge />
       </body>
     </html>
   );
