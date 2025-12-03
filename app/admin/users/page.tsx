@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import UsersTable, { AdminUser } from "../../components/admin/UsersTable";
+import { logEvent } from "@/lib/logEvent"; // 👈 NEW
 
 type AuthStatus = "loading" | "ok" | "forbidden";
 
@@ -23,6 +24,9 @@ export default function AdminUsersPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
+        await logEvent("security", "Accès à /admin/users sans session", {
+          path: "/admin/users",
+        });
         router.replace("/login?redirect=/admin/users");
         return;
       }
@@ -38,6 +42,10 @@ export default function AdminUsersPage() {
       console.log("[AdminUsers] profile:", profile, "error:", profileError);
 
       if (!profile || profile.role !== "admin") {
+        await logEvent("security", "Accès refusé à /admin/users (pas admin)", {
+          email: session.user.email,
+          role: profile?.role ?? null,
+        });
         router.replace("/tasks?forbidden=1");
         setAuthStatus("forbidden");
         return;
@@ -53,6 +61,9 @@ export default function AdminUsersPage() {
 
       if (error) {
         console.error("Erreur chargement utilisateurs:", error);
+        await logEvent("error", "Erreur chargement des utilisateurs", {
+          error,
+        });
       } else {
         setUsers(
           (data ?? []).map((u: any) => ({

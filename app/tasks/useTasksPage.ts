@@ -57,6 +57,8 @@ export function useTasksPage() {
     setErrorMessage(null);
 
     const now = Date.now();
+
+    // Petit anti-spam local (5s entre deux ajouts)
     if (now - lastAddTime < 5000) {
       const diff = ((now - lastAddTime) / 1000).toFixed(1);
       setErrorMessage(
@@ -68,6 +70,7 @@ export function useTasksPage() {
       return;
     }
 
+    // Validation du titre
     const parse = taskTitleSchema.safeParse(title);
     if (!parse.success) {
       const message =
@@ -81,6 +84,7 @@ export function useTasksPage() {
     }
     const validTitle = parse.data;
 
+    // Récupération de l'utilisateur
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -90,33 +94,9 @@ export function useTasksPage() {
       return;
     }
 
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { count, error: countError } = await supabase
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("created_at", since);
-
-    if (countError) {
-      console.error("Erreur comptage de tâches :", countError);
-      await logEvent("error", "Erreur comptage tâches quotidiennes", {
-        error: countError,
-      });
-    } else if ((count ?? 0) >= MAX_DAILY_TASKS) {
-      setErrorMessage(
-        "Vous avez atteint la limite de tâches pour aujourd'hui, revenez demain."
-      );
-      await logEvent("warning", "Limite journalière de tâches atteinte", {
-        user_id: user.id,
-        since,
-        count,
-        max: MAX_DAILY_TASKS,
-      });
-      return;
-    }
-
     setLastAddTime(now);
 
+    // Insert : la limite journalière est maintenant gérée par le trigger Postgres
     const { data, error } = await supabase
       .from("tasks")
       .insert({ title: validTitle, user_id: user.id })
@@ -125,11 +105,30 @@ export function useTasksPage() {
 
     if (error || !data) {
       console.error("Erreur ajout task :", error);
-      setErrorMessage("Erreur serveur lors de l'ajout de la tâche.");
-      await logEvent("error", "Échec création tâche", {
-        title: validTitle,
-        error,
-      });
+
+      const isDailyLimitError =
+        error &&
+        typeof error.message === "string" &&
+        error.message.includes("DAILY_TASK_LIMIT_REACHED");
+
+      const message = isDailyLimitError
+        ? "Vous avez atteint la limite de tâches pour aujourd'hui, revenez demain."
+        : "Erreur serveur lors de l'ajout de la tâche.";
+
+      setErrorMessage(message);
+
+      await logEvent(
+        isDailyLimitError ? "warning" : "error",
+        isDailyLimitError
+          ? "Limite journalière de tâches atteinte (enforcée côté DB)"
+          : "Échec création tâche",
+        {
+          title: validTitle,
+          user_id: user.id,
+          supabaseError: error,
+        }
+      );
+
       return;
     }
 

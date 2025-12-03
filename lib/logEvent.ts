@@ -3,15 +3,15 @@
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-type LogLevel = "info" | "warning" | "error";
-
-const supabase = createClientComponentClient();
+export type LogLevel = "info" | "warning" | "error" | "security";
 
 export async function logEvent(
   level: LogLevel,
   message: string,
-  context?: any
+  context?: Record<string, any>
 ) {
+  const supabase = createClientComponentClient();
+
   try {
     const {
       data: { session },
@@ -19,13 +19,17 @@ export async function logEvent(
 
     const userId = session?.user?.id ?? null;
 
-    await supabase.from("logs").insert({
+    const { error } = await supabase.from("logs").insert({
       level,
       message,
       user_id: userId,
       context: context ?? null,
     });
+
+    if (error) {
+      console.error("Erreur Supabase lors de l’écriture du log :", error);
+    }
   } catch (error) {
-    console.error("Erreur lors de l’écriture du log :", error);
+    console.error("Erreur inattendue lors de l’écriture du log :", error);
   }
 }

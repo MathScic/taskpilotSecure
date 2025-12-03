@@ -30,13 +30,24 @@ export default function UsersTable({ initialUsers }: Props) {
 
     if (error) {
       console.error("Erreur mise à jour rôle:", error);
+
+      // 🔴 Log d'erreur sécu quand la mise à jour échoue
+      await logEvent("error", "Échec mise à jour du rôle utilisateur", {
+        target_user_id: user.id,
+        target_email: user.email,
+        old_role: user.role,
+        attempted_role: newRole,
+        error,
+      });
+
       setSavingId(null);
       return;
     }
 
-    await logEvent("info", "Rôle utilisateur modifié", {
-      user_id: user.id,
-      email: user.email,
+    // 🟠 Log sécurité quand on change un rôle (action sensible)
+    await logEvent("security", "Changement de rôle utilisateur", {
+      target_user_id: user.id,
+      target_email: user.email,
       old_role: user.role,
       new_role: newRole,
     });
