@@ -23,31 +23,36 @@ export default function UsersTable({ initialUsers }: Props) {
   async function updateRole(user: AdminUser, newRole: "admin" | "user") {
     setSavingId(user.id);
 
-    const { error } = await supabase
+    // 1) Update du profil
+    const { error: profileError } = await supabase
       .from("profiles")
       .update({ role: newRole })
       .eq("id", user.id);
 
-    if (error) {
-      console.error("Erreur mise à jour rôle:", error);
-
-      // 🔴 Log d'erreur sécu quand la mise à jour échoue
-      await logEvent("error", "Échec mise à jour du rôle utilisateur", {
-        target_user_id: user.id,
-        target_email: user.email,
-        old_role: user.role,
-        attempted_role: newRole,
-        error,
-      });
-
+    if (profileError) {
+      console.error("Erreur mise à jour rôle:", profileError);
       setSavingId(null);
       return;
     }
 
-    // 🟠 Log sécurité quand on change un rôle (action sensible)
-    await logEvent("security", "Changement de rôle utilisateur", {
-      target_user_id: user.id,
-      target_email: user.email,
+    // 2) Update metadata du user auth (important !)
+    const { error: metaError } = await supabase.auth.admin.updateUserById(
+      user.id,
+      {
+        user_metadata: { role: newRole },
+      }
+    );
+
+    if (metaError) {
+      console.error("Erreur update metadata:", metaError);
+    }
+
+    // 3) Forcer le refresh de session pour cet utilisateur (sécurité)
+    await supabase.auth.refreshSession();
+
+    await logEvent("info", "Rôle utilisateur modifié", {
+      user_id: user.id,
+      email: user.email,
       old_role: user.role,
       new_role: newRole,
     });
