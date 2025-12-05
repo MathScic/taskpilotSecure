@@ -1,3 +1,4 @@
+// app/components/layout/LayoutSidebare.tsx
 "use client";
 
 import Link from "next/link";
@@ -18,7 +19,10 @@ export default function Sidebar() {
     async function load() {
       const {
         data: { session },
+        error: sessionError,
       } = await supabase.auth.getSession();
+
+      console.log("SIDEBAR session =", session, "error =", sessionError);
 
       if (!session) {
         setRole(null);
@@ -26,13 +30,23 @@ export default function Sidebar() {
         return;
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", session.user.id)
         .single();
 
-      setRole((data?.role as Role) ?? "user");
+      console.log(
+        "SIDEBAR profile for id =",
+        session.user.id,
+        "=>",
+        data,
+        "error =",
+        error
+      );
+
+      const dbRole = (data?.role as Role) ?? "user";
+      setRole(dbRole);
       setLoading(false);
     }
 
@@ -59,6 +73,8 @@ export default function Sidebar() {
     );
   }
 
+  const isAdmin = role === "admin";
+
   return (
     <aside className="flex h-screen w-60 flex-col bg-neutral-950 text-neutral-100">
       <div className="px-4 py-4 text-sm font-semibold tracking-tight">
@@ -69,7 +85,7 @@ export default function Sidebar() {
         <NavLink href="/tasks" label="Mes tâches" />
 
         {/* Bloc admin visible seulement si role === 'admin' */}
-        {!loading && role === "admin" && (
+        {!loading && isAdmin && (
           <>
             <div className="mt-4 mb-1 px-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
               Admin
