@@ -1,13 +1,12 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "./components/Sidebar";
-import { PageShell } from "./components/PageShell";
-import RoleBadge from "./components/RoleBadge";
+import CurrentUserBadge from "../app/components/layout/CurrentUserBadge";
+import LayoutSidebar from "./components/layout/LayoutSidebare";
 
 export const metadata: Metadata = {
-  title: "TaskPilot Secure",
-  description:
-    "SaaS de tâches avec sécurité avancée (RBAC, RLS, audit, protections anti-abus).",
+  title: "TaskPilotSecure",
+  description: "SaaS de tâches sécurisée",
 };
 
 export default function RootLayout({
@@ -16,27 +15,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" suppressHydrationWarning={true}>
+    <html lang="fr">
       <body className="min-h-screen bg-neutral-50">
-        <div className="flex min-h-screen">
-          {/* Sidebar desktop */}
-          <aside className="hidden md:block">
-            <Sidebar />
-          </aside>
+        {/* Container global : sidebar + contenu */}
+        <div className="flex min-h-screen max-h-screen overflow-hidden">
+          {/* Sidebar (desktop + mobile via overlay dans le composant) */}
+          <LayoutSidebar />
+          {/* Zone droite : topbar + contenu scrollable */}
+          <div className="flex-1 flex flex-col max-h-screen overflow-hidden">
+            {/* Topbar fixe */}
+            <header className="flex items-center justify-between px-4 py-2 border-b bg-white">
+              <h1 className="text-sm font-semibold text-neutral-700">
+                TaskPilotSecure
+              </h1>
+              <CurrentUserBadge />
+            </header>
 
-          {/* Sidebar mobile */}
-          <div className="md:hidden w-full">
-            <Sidebar />
+            {/* Contenu : SEULE zone scrollable */}
+            <main className="flex-1 overflow-y-auto">{children}</main>
           </div>
-
-          {/* Contenu principal avec transitions fluide */}
-          <main className="flex-1 px-4 py-6 md:px-8">
-            <div className="max-w-3xl mx-auto">
-              <PageShell>{children}</PageShell>
-            </div>
-          </main>
         </div>
-        <RoleBadge />
       </body>
     </html>
   );

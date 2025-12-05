@@ -86,61 +86,65 @@ export default function TasksList({
                   <span className="truncate">{task.title}</span>
                 )}
               </div>
+              {editingId === task.id ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={onCancelEdit}
+                    className="text-xs border rounded px-2 py-1 text-neutral-600 bg-white"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSaveEdit(task.id)}
+                    className="text-xs border rounded px-2 py-1 bg-slate-900 text-slate-50"
+                  >
+                    Enregistrer
+                  </button>
+                </>
+              ) : confirmDeleteId === task.id ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => onConfirmDelete(task.id)}
+                    className="text-xs border rounded px-2 py-1 bg-red-600 text-white"
+                  >
+                    Confirmer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onCancelDelete}
+                    className="text-xs border rounded px-2 py-1 text-neutral-600 bg-white"
+                  >
+                    Annuler
+                  </button>
+                </>
+              ) : (
+                <>
+                  {/* Bouton EDIT = stylo */}
+                  <button
+                    type="button"
+                    onClick={() => onStartEdit(task)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-white text-neutral-600 hover:bg-neutral-50"
+                    aria-label="Modifier la tâche"
+                  >
+                    ✏️
+                  </button>
 
-              <div className="flex items-center gap-2">
-                {editingId === task.id ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={onCancelEdit}
-                      className="text-xs border rounded px-2 py-1 text-neutral-600 bg-white"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onSaveEdit(task.id)}
-                      className="text-xs border rounded px-2 py-1 bg-slate-900 text-slate-50"
-                    >
-                      Enregistrer
-                    </button>
-                  </>
-                ) : confirmDeleteId === task.id ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => onConfirmDelete(task.id)}
-                      className="text-xs border rounded px-2 py-1 bg-red-600 text-white"
-                    >
-                      Confirmer
-                    </button>
-                    <button
-                      type="button"
-                      onClick={onCancelDelete}
-                      className="text-xs border rounded px-2 py-1 text-neutral-600 bg-white"
-                    >
-                      Annuler
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => onStartEdit(task)}
-                      className="text-xs border rounded px-2 py-1 text-neutral-700 bg-white"
-                    >
-                      Modifier
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onAskDelete(task.id)}
-                      className="text-xs border rounded px-2 py-1 text-red-700 bg-white"
-                    >
-                      Supprimer
-                    </button>
-                  </>
-                )}
-              </div>
+                  {/* Bouton DELETE = poubelle rouge */}
+                  <button
+                    type="button"
+                    onClick={() => onAskDelete(task.id)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-red-50 text-red-600 hover:bg-red-100"
+                    aria-label="Supprimer la tâche"
+                  >
+                    🗑️
+                  </button>
+                </>
+              )}
+
+              <div className="flex items-center gap-2"></div>
             </li>
           ))}
         </ul>

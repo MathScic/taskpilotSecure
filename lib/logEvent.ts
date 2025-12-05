@@ -3,13 +3,14 @@
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-export type LogLevel = "info" | "warning" | "error" | "security";
+export type LogLevel = "info" | "warning" | "error";
 
 export async function logEvent(
   level: LogLevel,
   message: string,
-  context?: Record<string, any>
+  context?: any
 ) {
+  // ⚠️ Client créé à chaque appel → toujours la session à jour
   const supabase = createClientComponentClient();
 
   try {
@@ -19,17 +20,13 @@ export async function logEvent(
 
     const userId = session?.user?.id ?? null;
 
-    const { error } = await supabase.from("logs").insert({
+    await supabase.from("logs").insert({
       level,
       message,
       user_id: userId,
       context: context ?? null,
     });
-
-    if (error) {
-      console.error("Erreur Supabase lors de l’écriture du log :", error);
-    }
   } catch (error) {
-    console.error("Erreur inattendue lors de l’écriture du log :", error);
+    console.error("Erreur lors de l’écriture du log :", error);
   }
 }
