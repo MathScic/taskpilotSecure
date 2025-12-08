@@ -155,47 +155,31 @@ export function useTasksPage() {
     setEditingTitle("");
   }
 
-  async function saveEdit(taskId: string) {
-    setErrorMessage(null);
+  async function saveEdit() {
+    if (!editingId) return;
 
-    const parse = taskTitleSchema.safeParse(editingTitle);
-    if (!parse.success) {
-      const message =
-        parse.error.issues[0]?.message ?? "Titre de tâche invalide.";
-      setErrorMessage(message);
-      await logEvent("warning", "Titre invalide lors de la modification", {
-        task_id: taskId,
-        raw_title: editingTitle,
-        issues: parse.error.issues,
-      });
+    const trimmedTitle = editingTitle.trim();
+    if (!trimmedTitle) {
+      setErrorMessage("Le titre ne peut pas être vide.");
       return;
     }
-    const validTitle = parse.data;
+
+    setErrorMessage(null);
 
     const { error } = await supabase
       .from("tasks")
-      .update({ title: validTitle })
-      .eq("id", taskId);
+      .update({ title: trimmedTitle })
+      .eq("id", editingId);
 
     if (error) {
-      console.error("Erreur mise à jour task :", error);
-      setErrorMessage("Erreur serveur lors de la mise à jour.");
-      await logEvent("error", "Échec mise à jour tâche", {
-        task_id: taskId,
-        title: validTitle,
-        error,
-      });
+      console.error("Erreur update tâche:", error);
+      setErrorMessage("Erreur lors de la mise à jour de la tâche.");
       return;
     }
 
-    await logEvent("info", "Tâche mise à jour", {
-      task_id: taskId,
-      new_title: validTitle,
-    });
-
+    // reset état d’édition
     setEditingId(null);
     setEditingTitle("");
-    await loadTasks();
   }
 
   function askDelete(taskId: string) {
