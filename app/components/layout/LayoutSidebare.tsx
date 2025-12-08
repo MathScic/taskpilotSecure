@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+// @ts-expect-error – helper non typé dans cette version du package
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Icônes Lucide

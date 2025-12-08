@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+// @ts-expect-error – la version du package ne typise pas createClientComponentClient mais il existe bien au runtime
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { ShieldAlert, AlertTriangle, Info, User } from "lucide-react";
 

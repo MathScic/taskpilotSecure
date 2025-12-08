@@ -1,6 +1,8 @@
 "use client";
 
+// @ts-expect-error – helper non typé dans cette version du package
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import { useEffect, useState } from "react";
 
 export default function RoleBadge() {

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+// @ts-expect-error – helper non typé dans cette version du package
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import { logEvent } from "@/lib/logEvent";
 
 export type AdminUser = {

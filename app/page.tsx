@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+// @ts-expect-error – helper non typé dans cette version du package
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import {
   LayoutDashboard,
   ListTodo,
