@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
-
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { taskTitleSchema } from "@/lib/validation";
 import { logEvent } from "@/lib/logEvent";
 
@@ -18,7 +17,7 @@ export type Task = {
 const MAX_DAILY_TASKS = 50;
 
 export function useTasksPage() {
-  const supabase = createBrowserSupabaseClient();
+  const supabase = createClientComponentClient();
   const searchParams = useSearchParams();
   const forbidden = searchParams.get("forbidden") === "1";
 
@@ -53,13 +52,13 @@ export function useTasksPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ---------- ADD ----------
   async function handleAddTask(e: React.FormEvent) {
     e.preventDefault();
     setErrorMessage(null);
 
     const now = Date.now();
 
-    // Petit anti-spam local (5s entre deux ajouts)
     if (now - lastAddTime < 5000) {
       const diff = ((now - lastAddTime) / 1000).toFixed(1);
       setErrorMessage(
@@ -71,7 +70,6 @@ export function useTasksPage() {
       return;
     }
 
-    // Validation du titre
     const parse = taskTitleSchema.safeParse(title);
     if (!parse.success) {
       const message =
@@ -85,7 +83,6 @@ export function useTasksPage() {
     }
     const validTitle = parse.data;
 
-    // Récupération de l'utilisateur
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -97,7 +94,6 @@ export function useTasksPage() {
 
     setLastAddTime(now);
 
-    // Insert : la limite journalière est maintenant gérée par le trigger Postgres
     const { data, error } = await supabase
       .from("tasks")
       .insert({ title: validTitle, user_id: user.id })
@@ -142,6 +138,7 @@ export function useTasksPage() {
     await loadTasks();
   }
 
+  // ---------- EDIT ----------
   function startEdit(taskId: string, currentTitle: string) {
     setErrorMessage(null);
     setEditingId(taskId);
@@ -157,30 +154,49 @@ export function useTasksPage() {
   async function saveEdit() {
     if (!editingId) return;
 
-    const trimmedTitle = editingTitle.trim();
-    if (!trimmedTitle) {
-      setErrorMessage("Le titre ne peut pas être vide.");
+    setErrorMessage(null);
+
+    const parse = taskTitleSchema.safeParse(editingTitle);
+    if (!parse.success) {
+      const message =
+        parse.error.issues[0]?.message ?? "Titre de tâche invalide.";
+      setErrorMessage(message);
+      await logEvent("warning", "Titre invalide lors de la modification", {
+        task_id: editingId,
+        raw_title: editingTitle,
+        issues: parse.error.issues,
+      });
       return;
     }
-
-    setErrorMessage(null);
+    const validTitle = parse.data;
 
     const { error } = await supabase
       .from("tasks")
-      .update({ title: trimmedTitle })
+      .update({ title: validTitle })
       .eq("id", editingId);
 
     if (error) {
-      console.error("Erreur update tâche:", error);
-      setErrorMessage("Erreur lors de la mise à jour de la tâche.");
+      console.error("Erreur mise à jour task :", error);
+      setErrorMessage("Erreur serveur lors de la mise à jour.");
+      await logEvent("error", "Échec mise à jour tâche", {
+        task_id: editingId,
+        title: validTitle,
+        error,
+      });
       return;
     }
 
-    // reset état d’édition
+    await logEvent("info", "Tâche mise à jour", {
+      task_id: editingId,
+      new_title: validTitle,
+    });
+
     setEditingId(null);
     setEditingTitle("");
+    await loadTasks();
   }
 
+  // ---------- DELETE ----------
   function askDelete(taskId: string) {
     setErrorMessage(null);
     setConfirmDeleteId(taskId);
@@ -198,16 +214,19 @@ export function useTasksPage() {
       .eq("id", confirmDeleteId);
 
     if (error) {
-      console.error("Erreur suppression tâche:", error);
-      setErrorMessage("Erreur lors de la suppression de la tâche.");
+      console.error("Erreur suppression task :", error);
+      setErrorMessage("Erreur serveur lors de la suppression.");
+      await logEvent("error", "Échec suppression tâche", {
+        task_id: confirmDeleteId,
+        error,
+      });
       return;
     }
 
-    // On enlève la tâche de la liste locale
-    setTasks((prev) => prev.filter((t) => t.id !== confirmDeleteId));
+    await logEvent("warning", "Tâche supprimée", { task_id: confirmDeleteId });
 
-    // On ferme le mode "confirmation"
     setConfirmDeleteId(null);
+    await loadTasks();
   }
 
   function cancelDelete() {

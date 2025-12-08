@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-import { createClient } from "../../../utils/supabse/client";
-
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 
 type Profile = {
@@ -11,7 +9,7 @@ type Profile = {
   role: string | null;
 };
 
-const supabase = createClient();
+const supabase = createClientComponentClient();
 
 export default function CurrentUserBadge() {
   const [user, setUser] = useState<User | null>(null);

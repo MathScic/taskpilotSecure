@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "../../../utils/supabse/client";
-
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { logEvent } from "@/lib/logEvent";
 
 export type AdminUser = {
@@ -17,7 +16,7 @@ type Props = {
 };
 
 export default function UsersTable({ initialUsers }: Props) {
-  const supabase = createClient();
+  const supabase = createClientComponentClient();
   const [users, setUsers] = useState<AdminUser[]>(initialUsers);
   const [savingId, setSavingId] = useState<string | null>(null);
 

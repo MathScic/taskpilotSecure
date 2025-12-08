@@ -1,16 +1,19 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: "class",
+  darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+      },
+    },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
-
 export default config;

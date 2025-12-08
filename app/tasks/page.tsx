@@ -30,7 +30,6 @@ export default function TasksPage() {
   return (
     <div className="space-y-6">
       <TasksHeader forbidden={forbidden} />
-
       <section className="grid gap-4 md:grid-cols-2">
         <NewTaskForm
           title={title}
@@ -40,7 +39,6 @@ export default function TasksPage() {
         />
         <SecurityCard />
       </section>
-
       <TasksList
         tasks={tasks}
         loading={loading}

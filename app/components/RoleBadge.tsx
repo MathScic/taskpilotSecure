@@ -1,7 +1,6 @@
 "use client";
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-
 import { useEffect, useState } from "react";
 
 export default function RoleBadge() {
@@ -32,10 +31,12 @@ export default function RoleBadge() {
     fetchRole();
 
     // 🔥 Mettre à jour le rôle à CHAQUE changement de session
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      // On recharge le rôle dès qu'une session change
-      fetchRole();
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        // On recharge le rôle dès qu'une session change
+        fetchRole();
+      }
+    );
 
     // cleanup
     return () => {

@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createClient } from "../../../utils/supabse/client";
-
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Icônes Lucide
@@ -24,8 +23,7 @@ type Role = "admin" | "user" | null;
 export default function LayoutSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-
-  const supabase = createClient();
+  const supabase = createClientComponentClient() as SupabaseClient;
 
   const [role, setRole] = useState<Role>(null);
   const [email, setEmail] = useState<string | null>(null);

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { ShieldAlert, AlertTriangle, Info, User } from "lucide-react";
 
