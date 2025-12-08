@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 // @ts-expect-error – la version du package ne typise pas createClientComponentClient mais il existe bien au runtime
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { ShieldAlert, AlertTriangle, Info, User } from "lucide-react";
 
 type LogRow = {
@@ -26,7 +26,7 @@ type LogWithUser = LogRow & {
 };
 
 export default function AdminLogsPage() {
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserSupabaseClient();
   const [logs, setLogs] = useState<LogWithUser[]>([]);
   const [loading, setLoading] = useState(true);
 

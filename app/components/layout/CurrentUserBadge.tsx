@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 // @ts-expect-error – helper non typé dans cette version du package
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -11,7 +11,7 @@ type Profile = {
   role: string | null;
 };
 
-const supabase = createClientComponentClient();
+const supabase = createBrowserSupabaseClient();
 
 export default function CurrentUserBadge() {
   const [user, setUser] = useState<User | null>(null);

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 // @ts-expect-error – helper non typé dans cette version du package
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
 import {
   LayoutDashboard,
@@ -18,7 +18,7 @@ type Role = "admin" | "user" | null;
 
 export default function HomePage() {
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserSupabaseClient();
 
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);

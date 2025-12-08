@@ -1,12 +1,12 @@
 "use client";
 
 // @ts-expect-error – helper non typé dans cette version du package
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
 import { useRouter } from "next/navigation";
 
 export default function LogoutButton() {
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserSupabaseClient();
   const router = useRouter();
 
   async function handleLogout() {

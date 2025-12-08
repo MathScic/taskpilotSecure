@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 // @ts-expect-error – helper non typé dans cette version du package
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
 import { taskTitleSchema } from "@/lib/validation";
 import { logEvent } from "@/lib/logEvent";
@@ -19,7 +19,7 @@ export type Task = {
 const MAX_DAILY_TASKS = 50;
 
 export function useTasksPage() {
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserSupabaseClient();
   const searchParams = useSearchParams();
   const forbidden = searchParams.get("forbidden") === "1";
 

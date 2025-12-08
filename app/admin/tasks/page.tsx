@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 // @ts-expect-error – helper non typé dans cette version du package
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
 import { logEvent } from "@/lib/logEvent";
 import { CheckCircle2, RotateCcw, Trash2 } from "lucide-react";
@@ -27,7 +27,7 @@ type AdminTask = TaskRow & {
 };
 
 export default function AdminTasksPage() {
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserSupabaseClient();
   const [tasks, setTasks] = useState<AdminTask[]>([]);
   const [loading, setLoading] = useState(true);
 

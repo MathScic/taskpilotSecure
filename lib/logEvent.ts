@@ -2,7 +2,7 @@
 "use client";
 
 // @ts-expect-error – helper non typé dans cette version du package
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
 export type LogLevel = "info" | "warning" | "error";
 
@@ -12,7 +12,7 @@ export async function logEvent(
   context?: any
 ) {
   // ⚠️ Client créé à chaque appel → toujours la session à jour
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserSupabaseClient();
 
   try {
     const {
