@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-// @ts-expect-error – helper non typé dans cette version du package
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const supabase = createBrowserSupabaseClient();
+  const supabase = createClientComponentClient();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");

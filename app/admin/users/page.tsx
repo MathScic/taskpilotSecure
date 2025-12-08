@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// @ts-expect-error – helper non typé dans cette version du package
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
 import { logEvent } from "@/lib/logEvent";
 import {
@@ -22,7 +22,7 @@ type ProfileRow = {
 };
 
 export default function AdminUsersPage() {
-  const supabase = createBrowserSupabaseClient();
+  const supabase = createServerComponentClient({ cookies });
   const [users, setUsers] = useState<ProfileRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);

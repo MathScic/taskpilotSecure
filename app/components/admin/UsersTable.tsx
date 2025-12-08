@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-// @ts-expect-error – helper non typé dans cette version du package
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "../../../utils/supabse/client";
 
 import { logEvent } from "@/lib/logEvent";
 
@@ -18,7 +17,7 @@ type Props = {
 };
 
 export default function UsersTable({ initialUsers }: Props) {
-  const supabase = createBrowserSupabaseClient();
+  const supabase = createClient();
   const [users, setUsers] = useState<AdminUser[]>(initialUsers);
   const [savingId, setSavingId] = useState<string | null>(null);
 
