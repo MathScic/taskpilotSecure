@@ -188,25 +188,27 @@ export function useTasksPage() {
     setEditingId(null);
   }
 
-  async function confirmDelete(taskId: string) {
+  async function confirmDelete() {
+    if (!confirmDeleteId) return;
+
     setErrorMessage(null);
 
-    const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", confirmDeleteId);
 
     if (error) {
-      console.error("Erreur suppression task :", error);
-      setErrorMessage("Erreur serveur lors de la suppression.");
-      await logEvent("error", "Échec suppression tâche", {
-        task_id: taskId,
-        error,
-      });
+      console.error("Erreur suppression tâche:", error);
+      setErrorMessage("Erreur lors de la suppression de la tâche.");
       return;
     }
 
-    await logEvent("warning", "Tâche supprimée", { task_id: taskId });
+    // On enlève la tâche de la liste locale
+    setTasks((prev) => prev.filter((t) => t.id !== confirmDeleteId));
 
+    // On ferme le mode "confirmation"
     setConfirmDeleteId(null);
-    await loadTasks();
   }
 
   function cancelDelete() {
