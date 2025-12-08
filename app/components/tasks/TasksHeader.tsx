@@ -1,29 +1,26 @@
-type Props = {
+type TasksHeaderProps = {
   forbidden: boolean;
 };
 
-export default function TasksHeader({ forbidden }: Props) {
-  return (
-    <>
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Tableau de bords des tâches</h1>
-          <p className="text-sm text-neutral-500">
-            Ajoutez, gérez et consultez vos tâches dans un environnement
-            sécurisé.
-          </p>
-          <span className="text-[11px] border rounded-full px-3 py-1 text-neutral-500 bg-white">
-            🔐 RBAC + RLS actifs
-          </span>
-        </div>
-      </header>
-
-      {forbidden && (
-        <p className="mt-2 text-xs border border-amber-300 bg-amber-50 text-amber-800 rounded-md px-3 py-2">
-          Vous n&apos;avez pas les droits nécessaires pour accéder à cette
-          section (Logs &amp; sécurité).
+export default function TasksHeader({ forbidden }: TasksHeaderProps) {
+  if (forbidden) {
+    return (
+      <header className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3">
+        <h1 className="text-sm font-semibold text-rose-800">Accès restreint</h1>
+        <p className="mt-1 text-xs text-rose-700">
+          Vous n&apos;êtes pas autorisé à consulter ces tâches. Si vous pensez
+          qu&apos;il s&apos;agit d&apos;une erreur, contactez un administrateur.
         </p>
-      )}
-    </>
+      </header>
+    );
+  }
+
+  return (
+    <header className="flex flex-col gap-1">
+      <h1 className="text-xl font-semibold text-slate-900">Mes tâches</h1>
+      <p className="text-sm text-slate-500">
+        Gérez vos tâches personnelles en toute sécurité avec TaskPilotSecure.
+      </p>
+    </header>
   );
 }

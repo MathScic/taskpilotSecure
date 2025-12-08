@@ -5,8 +5,31 @@ import CurrentUserBadge from "../app/components/layout/CurrentUserBadge";
 import LayoutSidebar from "./components/layout/LayoutSidebare";
 
 export const metadata: Metadata = {
-  title: "TaskPilotSecure",
-  description: "SaaS de tâches sécurisée",
+  title: {
+    default: "TaskPilotSecure – Gestion de tâches sécurisée",
+    template: "%s – TaskPilotSecure",
+  },
+  description:
+    "TaskPilotSecure est un SaaS de gestion de tâches avec journalisation de sécurité, rôles admin/user et contrôle d’accès renforcé.",
+  metadataBase: new URL("https://taskpilotsecure.vercel.app"), // 🔁 remplace par ton domaine final
+  openGraph: {
+    title: "TaskPilotSecure – Gestion de tâches sécurisée",
+    description:
+      "Gérez vos tâches avec des règles RLS, des logs de sécurité et un dashboard admin complet.",
+    url: "https://taskpilotsecure.vercel.app", // 🔁 idem
+    siteName: "TaskPilotSecure",
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TaskPilotSecure – Gestion de tâches sécurisée",
+    description:
+      "Application SaaS pour gérer vos tâches avec sécurité avancée (RLS, logs, rôles, etc.).",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +49,10 @@ export default function RootLayout({
               </h1>
               <CurrentUserBadge />
             </header>
-            <main className="flex-1 overflow-y-auto">{children}</main>
+            {/* Contenu : SEULE zone scrollable */}
+            <main className="flex-1 overflow-y-auto bg-neutral-50">
+              <div className="mx-auto max-w-5xl px-6 py-6">{children}</div>
+            </main>
           </div>
         </div>
       </body>

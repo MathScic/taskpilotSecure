@@ -1,7 +1,5 @@
 "use client";
 
-import LogoutButton from "../components/LogoutButton";
-
 import TasksHeader from "../components/tasks/TasksHeader";
 import NewTaskForm from "../components/tasks/NewTaskForm";
 import SecurityCard from "../components/tasks/SecurityCard";
@@ -57,10 +55,6 @@ export default function TasksPage() {
         onCancelDelete={cancelDelete}
         onConfirmDelete={confirmDelete}
       />
-
-      <div className="flex justify-end">
-        <LogoutButton />
-      </div>
     </div>
   );
 }

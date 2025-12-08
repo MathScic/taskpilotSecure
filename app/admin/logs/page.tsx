@@ -1,39 +1,33 @@
-// app/admin/logs/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { ShieldAlert, AlertTriangle, Info, User } from "lucide-react";
 
-type Log = {
+type LogRow = {
   id: string;
   created_at: string;
-  level: string | null;
+  level: string | null; // "info" | "warning" | "error"
   message: string | null;
   user_id: string | null;
   context: any | null;
 };
 
-type Filter = "all" | "security" | "error" | "warning" | "info";
-
-const LEVEL_LABELS: Record<string, string> = {
-  security: "Security",
-  error: "Error",
-  warning: "Warning",
-  info: "Info",
+type ProfileRow = {
+  id: string;
+  email: string | null;
+  full_name: string | null;
 };
 
-const LEVEL_CLASSES: Record<string, string> = {
-  security: "bg-purple-100 text-purple-700",
-  error: "bg-red-100 text-red-700",
-  warning: "bg-amber-100 text-amber-700",
-  info: "bg-sky-100 text-sky-700",
+type LogWithUser = LogRow & {
+  user_email: string | null;
+  user_name: string | null;
 };
 
 export default function AdminLogsPage() {
   const supabase = createClientComponentClient();
-  const [logs, setLogs] = useState<Log[]>([]);
+  const [logs, setLogs] = useState<LogWithUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<Filter>("all");
 
   useEffect(() => {
     void loadLogs();
@@ -42,140 +36,153 @@ export default function AdminLogsPage() {
 
   async function loadLogs() {
     setLoading(true);
-    const { data, error } = await supabase
+
+    const { data: logsData, error } = await supabase
       .from("logs")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(200); // on évite de tout charger d'un coup
+      .limit(200);
 
     if (error) {
       console.error("Erreur chargement logs:", error);
-    } else {
-      setLogs((data as Log[]) ?? []);
+      setLoading(false);
+      return;
     }
+
+    const logsRows = (logsData ?? []) as LogRow[];
+
+    const userIds = Array.from(
+      new Set(logsRows.map((log) => log.user_id).filter(Boolean))
+    ) as string[];
+
+    const profilesMap = new Map<string, ProfileRow>();
+
+    if (userIds.length > 0) {
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", userIds);
+
+      (profilesData ?? []).forEach((p: ProfileRow) => profilesMap.set(p.id, p));
+    }
+
+    const merged: LogWithUser[] = logsRows.map((log) => {
+      const p = log.user_id ? profilesMap.get(log.user_id) : undefined;
+      return {
+        ...log,
+        user_email: p?.email ?? null,
+        user_name: p?.full_name ?? null,
+      };
+    });
+
+    setLogs(merged);
     setLoading(false);
   }
 
-  const filteredLogs = logs.filter((log) => {
-    if (filter === "all") return true;
-    const level = (log.level ?? "").toLowerCase();
-    return level === filter;
-  });
+  function levelBadge(level: string | null) {
+    const lvl = level?.toLowerCase();
 
-  function formatDate(dateStr: string) {
-    const d = new Date(dateStr);
-    if (Number.isNaN(d.getTime())) return dateStr;
-    return d.toLocaleString("fr-FR");
+    if (lvl === "error") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-700">
+          <ShieldAlert className="h-3 w-3" />
+          Erreur
+        </span>
+      );
+    }
+
+    if (lvl === "warning") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+          <AlertTriangle className="h-3 w-3" />
+          Alerte
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[11px] font-medium text-sky-700">
+        <Info className="h-3 w-3" />
+        Info
+      </span>
+    );
   }
 
-  function formatContext(ctx: any) {
-    if (!ctx) return "—";
-    try {
-      const str = JSON.stringify(ctx);
-      return str.length > 80 ? str.slice(0, 77) + "..." : str;
-    } catch {
-      return String(ctx);
-    }
+  function formatUser(log: LogWithUser) {
+    if (log.user_name) return log.user_name;
+    if (log.user_email) return log.user_email;
+    if (log.user_id) return `[${log.user_id.slice(0, 6)}…]`;
+    return "Système";
+  }
+
+  if (loading) {
+    return <p>Chargement des logs…</p>;
   }
 
   return (
-    <main className="px-6 py-8">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold mb-1">Journal des logs</h1>
-          <p className="text-sm text-neutral-500">
-            Suivi des événements techniques et de sécurité.
-          </p>
-        </div>
-        <button
-          onClick={() => void loadLogs()}
-          className="text-sm border rounded-md px-3 py-1.5 bg-white hover:bg-neutral-50"
-        >
-          Rafraîchir
-        </button>
-      </div>
-
-      {/* Filtres */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        {(
-          [
-            { key: "all", label: "Tous" },
-            { key: "security", label: "Security" },
-            { key: "error", label: "Error" },
-            { key: "warning", label: "Warning" },
-            { key: "info", label: "Info" },
-          ] as { key: Filter; label: string }[]
-        ).map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setFilter(key)}
-            className={`text-xs px-3 py-1.5 rounded-full border ${
-              filter === key
-                ? "bg-neutral-900 text-white border-neutral-900"
-                : "bg-white text-neutral-700 hover:bg-neutral-50"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <p className="text-sm text-neutral-500">Chargement des logs…</p>
-      ) : filteredLogs.length === 0 ? (
-        <p className="text-sm text-neutral-500">
-          Aucun log à afficher pour ce filtre.
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-xl font-semibold text-slate-900">
+          Journaux de sécurité
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Suivi des événements sensibles : authentification, actions admin,
+          erreurs d’accès, etc.
         </p>
-      ) : (
-        <div className="rounded-md border bg-white overflow-hidden">
-          {/* Conteneur scrollable interne */}
-          <div className="max-h-[60vh] overflow-y-auto overflow-x-auto">
-            <table className="min-w-full text-xs">
-              <thead className="bg-neutral-50 sticky top-0 z-10">
-                <tr>
-                  <th className="px-3 py-2 text-left font-medium">Date</th>
-                  <th className="px-3 py-2 text-left font-medium">Niveau</th>
-                  <th className="px-3 py-2 text-left font-medium">Message</th>
-                  <th className="px-3 py-2 text-left font-medium">User</th>
-                  <th className="px-3 py-2 text-left font-medium">Contexte</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.map((log) => {
-                  const lvl = (log.level ?? "").toLowerCase();
-                  const badgeClass =
-                    LEVEL_CLASSES[lvl] ?? "bg-neutral-100 text-neutral-700";
+      </div>
 
-                  return (
-                    <tr key={log.id} className="border-t">
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {formatDate(log.created_at)}
-                      </td>
-                      <td className="px-3 py-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeClass}`}
-                        >
-                          {LEVEL_LABELS[lvl] ?? log.level ?? "—"}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 max-w-xs truncate">
-                        {log.message ?? "—"}
-                      </td>
-                      <td className="px-3 py-2 text-[10px] text-neutral-500">
-                        {log.user_id ? log.user_id.slice(0, 8) + "…" : "—"}
-                      </td>
-                      <td className="px-3 py-2 max-w-sm truncate text-[10px] text-neutral-500">
-                        {formatContext(log.context)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-    </main>
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <table className="min-w-full text-sm">
+          <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <tr>
+              <th className="px-3 py-2 text-left">Date</th>
+              <th className="px-3 py-2 text-left">Niveau</th>
+              <th className="px-3 py-2 text-left">Message</th>
+              <th className="px-3 py-2 text-left">Utilisateur</th>
+              <th className="px-3 py-2 text-left">Contexte</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.length === 0 && (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-3 py-4 text-center text-xs text-slate-400"
+                >
+                  Aucun log pour le moment.
+                </td>
+              </tr>
+            )}
+
+            {logs.map((log) => (
+              <tr
+                key={log.id}
+                className="border-t border-slate-100 hover:bg-slate-50/60"
+              >
+                <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-nowrap">
+                  {new Date(log.created_at).toLocaleString("fr-FR")}
+                </td>
+                <td className="px-3 py-2 align-top">{levelBadge(log.level)}</td>
+                <td className="px-3 py-2 align-top text-slate-800">
+                  {log.message ?? "-"}
+                </td>
+                <td className="px-3 py-2 align-top text-xs text-slate-700">
+                  <span className="inline-flex items-center gap-1">
+                    <User className="h-3 w-3 text-slate-400" />
+                    {formatUser(log)}
+                  </span>
+                </td>
+                <td className="px-3 py-2 align-top text-[11px] text-slate-500 max-w-xs">
+                  {log.context
+                    ? JSON.stringify(log.context, null, 0).slice(0, 120) +
+                      (JSON.stringify(log.context).length > 120 ? "…" : "")
+                    : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
