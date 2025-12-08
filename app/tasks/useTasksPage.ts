@@ -143,10 +143,10 @@ export function useTasksPage() {
     await loadTasks();
   }
 
-  function startEdit(task: Task) {
+  function startEdit(taskId: string, currentTitle: string) {
     setErrorMessage(null);
-    setEditingId(task.id);
-    setEditingTitle(task.title);
+    setEditingId(taskId);
+    setEditingTitle(currentTitle);
     setConfirmDeleteId(null);
   }
 
