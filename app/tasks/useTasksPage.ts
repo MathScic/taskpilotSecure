@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-// @ts-expect-error – helper non typé dans cette version du package
 import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
 import { taskTitleSchema } from "@/lib/validation";
