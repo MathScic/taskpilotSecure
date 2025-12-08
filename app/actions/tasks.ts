@@ -1,11 +1,11 @@
 "use server";
 
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 export async function addTask(formData: FormData) {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = createServerComponentClient({ cookies });
 
   const title = String(formData.get("title") ?? "").trim();
 
@@ -21,7 +21,8 @@ export async function addTask(formData: FormData) {
     throw new Error("Utilisateur non authentifié.");
   }
 
-  const role = session.user.user_metadata.role;
+  // On n'utilise plus user_metadata.role ici,
+  // la sécurité est gérée par RLS + UI + rôle en base (profiles)
 
   const { error } = await supabase.from("tasks").insert({
     title,
@@ -32,6 +33,7 @@ export async function addTask(formData: FormData) {
     throw new Error("Erreur d'insertion : " + error.message);
   }
 
+  // On invalide la liste des tâches pour forcer le refresh côté /tasks
   revalidatePath("/tasks");
 
   return { ok: true };
