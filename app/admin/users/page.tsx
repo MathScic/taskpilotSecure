@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 import { logEvent } from "@/lib/logEvent";
 import {
@@ -22,7 +22,7 @@ type ProfileRow = {
 };
 
 export default function AdminUsersPage() {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createClientComponentClient();
   const [users, setUsers] = useState<ProfileRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
