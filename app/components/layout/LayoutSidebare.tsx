@@ -23,7 +23,7 @@ type Role = "admin" | "user" | null;
 export default function LayoutSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClientComponentClient() as SupabaseClient;
+  const supabase = createClientComponentClient();
 
   const [role, setRole] = useState<Role>(null);
   const [email, setEmail] = useState<string | null>(null);

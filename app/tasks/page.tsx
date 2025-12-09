@@ -1,12 +1,14 @@
 "use client";
 
+import { Suspense } from "react";
+
 import TasksHeader from "../components/tasks/TasksHeader";
 import NewTaskForm from "../components/tasks/NewTaskForm";
 import SecurityCard from "../components/tasks/SecurityCard";
 import TasksList from "../components/tasks/TaskList";
 import { useTasksPage } from "./useTasksPage";
 
-export default function TasksPage() {
+function TasksPageContent() {
   const {
     forbidden,
     tasks,
@@ -30,6 +32,7 @@ export default function TasksPage() {
   return (
     <div className="space-y-6">
       <TasksHeader forbidden={forbidden} />
+
       <section className="grid gap-4 md:grid-cols-2">
         <NewTaskForm
           title={title}
@@ -39,6 +42,7 @@ export default function TasksPage() {
         />
         <SecurityCard />
       </section>
+
       <TasksList
         tasks={tasks}
         loading={loading}
@@ -54,5 +58,19 @@ export default function TasksPage() {
         onConfirmDelete={confirmDelete}
       />
     </div>
+  );
+}
+
+export default function TasksPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-4 text-sm text-slate-500">
+          Chargement de vos tâches…
+        </div>
+      }
+    >
+      <TasksPageContent />
+    </Suspense>
   );
 }
