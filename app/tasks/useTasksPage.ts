@@ -134,8 +134,11 @@ export function useTasksPage() {
       title: data.title,
     });
 
+    // 1) On met à jour le state immédiatement
+    setTasks((prev) => [data as Task, ...prev]);
+
+    // 2) On reset le champ
     setTitle("");
-    await loadTasks();
   }
 
   // ---------- EDIT ----------
@@ -185,15 +188,18 @@ export function useTasksPage() {
       });
       return;
     }
-
     await logEvent("info", "Tâche mise à jour", {
       task_id: editingId,
       new_title: validTitle,
     });
 
+    // mise à jour locale
+    setTasks((prev) =>
+      prev.map((t) => (t.id === editingId ? { ...t, title: validTitle } : t))
+    );
+
     setEditingId(null);
     setEditingTitle("");
-    await loadTasks();
   }
 
   // ---------- DELETE ----------
@@ -222,11 +228,12 @@ export function useTasksPage() {
       });
       return;
     }
-
     await logEvent("warning", "Tâche supprimée", { task_id: confirmDeleteId });
 
+    // on enlève la tâche localement
+    setTasks((prev) => prev.filter((t) => t.id !== confirmDeleteId));
+
     setConfirmDeleteId(null);
-    await loadTasks();
   }
 
   function cancelDelete() {
