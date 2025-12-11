@@ -30,7 +30,7 @@ export default function CurrentUserBadge() {
         .single();
 
       setUser({
-        email: session.user.email,
+        email: session.user.email ?? null,
         role: profile?.role ?? null,
       });
     };
