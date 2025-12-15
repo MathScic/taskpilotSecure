@@ -14,12 +14,12 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   // 🔐 Important : à chaque visite de /auth/login, on déconnecte
-  useEffect(() => {
-    void (async () => {
-      await supabase.auth.signOut();
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   void (async () => {
+  //     await supabase.auth.signOut();
+  //   })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +41,7 @@ export default function LoginPage() {
     // Connexion OK → redirection vers /tasks (la sidebar fera le reste)
     if (data.session) {
       router.push("/tasks");
+      router.refresh();
     } else {
       setError("Connexion impossible, veuillez réessayer.");
       setSubmitting(false);
