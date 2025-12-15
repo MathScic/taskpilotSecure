@@ -1,11 +1,12 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import CurrentUserBadge from "../app/components/layout/CurrentUserBadge";
+
 import LayoutSidebar from "./components/layout/LayoutSidebare";
-import MobileNav from "./components/layout/MobileNav";
+
 import PageTransition from "./components/layout/PageTransition";
-import AuthButton from "./components/layout/AuthButton";
+
+import HeaderRight from "./components/layout/HeaderRight";
 
 export const metadata: Metadata = {
   title: {
@@ -50,16 +51,15 @@ export default function RootLayout({
           </div>
 
           <div className="flex-1 flex flex-col max-h-screen overflow-hidden">
-            <header className="flex items-center justify-between border-b bg-white px-4 py-2 md:px-6 md:py-3">
+            <header className="flex items-center justify-between px-4 py-2 border-b bg-white">
+              <h1 className="text-sm font-semibold text-neutral-700">
+                TaskPilotSecure
+              </h1>
+
+              {/* Zone droite : Auth + User */}
               <div className="flex items-center gap-2">
-                <h1 className="text-sm font-semibold text-neutral-700">
-                  TaskPilotSecure
-                </h1>
-                {/* Nav mobile à côté du titre */}
-                <MobileNav />
+                <HeaderRight />
               </div>
-              <AuthButton />
-              <CurrentUserBadge />
             </header>
 
             {/* Contenu : seule zone scrollable */}
