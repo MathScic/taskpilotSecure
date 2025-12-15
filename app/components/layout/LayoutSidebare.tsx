@@ -115,7 +115,8 @@ export default function LayoutSidebar() {
     await supabase.auth.signOut();
     setRole(null);
     setEmail(null);
-    router.push("/"); // 👈 redirection vers la home, plus vers /auth/login
+    router.push("/auth/login");
+    router.refresh();
   }
 
   return (

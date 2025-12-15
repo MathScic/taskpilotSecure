@@ -5,6 +5,7 @@ import CurrentUserBadge from "../app/components/layout/CurrentUserBadge";
 import LayoutSidebar from "./components/layout/LayoutSidebare";
 import MobileNav from "./components/layout/MobileNav";
 import PageTransition from "./components/layout/PageTransition";
+import AuthButton from "./components/layout/AuthButton";
 
 export const metadata: Metadata = {
   title: {
@@ -57,6 +58,7 @@ export default function RootLayout({
                 {/* Nav mobile à côté du titre */}
                 <MobileNav />
               </div>
+              <AuthButton />
               <CurrentUserBadge />
             </header>
 
