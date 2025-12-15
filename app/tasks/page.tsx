@@ -20,6 +20,17 @@ function TasksPageContent() {
     editingTitle,
     setEditingTitle,
     confirmDeleteId,
+
+    // ✅ états UI
+    adding,
+    saving,
+    deletingId,
+
+    // ✅ toggle
+    togglingId,
+    toggleTask,
+
+    // actions
     handleAddTask,
     startEdit,
     cancelEdit,
@@ -39,6 +50,7 @@ function TasksPageContent() {
           onTitleChange={setTitle}
           onSubmit={handleAddTask}
           errorMessage={errorMessage}
+          submitting={adding}
         />
         <SecurityCard />
       </section>
@@ -56,6 +68,10 @@ function TasksPageContent() {
         onAskDelete={askDelete}
         onCancelDelete={cancelDelete}
         onConfirmDelete={confirmDelete}
+        saving={saving}
+        deletingId={deletingId}
+        togglingId={togglingId}
+        onToggleTask={toggleTask}
       />
     </div>
   );

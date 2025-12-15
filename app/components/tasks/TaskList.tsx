@@ -1,3 +1,6 @@
+"use client";
+
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
   RotateCcw,
@@ -6,7 +9,6 @@ import {
   X,
   Save,
 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 
 type Task = {
   id: string;
@@ -18,16 +20,25 @@ type Task = {
 type TasksListProps = {
   tasks: Task[];
   loading: boolean;
+
   editingId: string | null;
   editingTitle: string;
   onEditingTitleChange: (value: string) => void;
   onStartEdit: (taskId: string, currentTitle: string) => void;
   onCancelEdit: () => void;
   onSaveEdit: () => void;
+
   confirmDeleteId: string | null;
   onAskDelete: (taskId: string) => void;
   onCancelDelete: () => void;
   onConfirmDelete: () => void;
+
+  saving?: boolean;
+  deletingId?: string | null;
+
+  // ✅ toggle
+  togglingId?: string | null;
+  onToggleTask?: (taskId: string, currentIsDone: boolean) => void;
 };
 
 export default function TasksList({
@@ -43,6 +54,10 @@ export default function TasksList({
   onAskDelete,
   onCancelDelete,
   onConfirmDelete,
+  saving = false,
+  deletingId = null,
+  togglingId = null,
+  onToggleTask,
 }: TasksListProps) {
   if (loading) {
     return <p className="text-sm text-slate-500">Chargement de vos tâches…</p>;
@@ -67,6 +82,9 @@ export default function TasksList({
           const statusClasses = task.is_done
             ? "bg-emerald-50 text-emerald-700"
             : "bg-amber-50 text-amber-700";
+
+          const isDeletingThis = deletingId === task.id;
+          const isTogglingThis = togglingId === task.id;
 
           return (
             <motion.div
@@ -105,7 +123,7 @@ export default function TasksList({
 
                 <p className="mt-1 text-xs text-neutral-500">
                   <span
-                    className={`mr-2 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusClasses}`}
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium mr-2 ${statusClasses}`}
                   >
                     {statusLabel}
                   </span>
@@ -119,7 +137,8 @@ export default function TasksList({
                     <button
                       type="button"
                       onClick={onSaveEdit}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-emerald-50"
+                      disabled={saving}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-emerald-50 disabled:opacity-50"
                       aria-label="Enregistrer la modification"
                     >
                       <Save className="h-4 w-4 text-emerald-600" />
@@ -135,7 +154,6 @@ export default function TasksList({
                   </>
                 ) : (
                   <>
-                    {/* Modifier */}
                     <button
                       type="button"
                       onClick={() => onStartEdit(task.id, task.title)}
@@ -145,7 +163,6 @@ export default function TasksList({
                       <PencilLine className="h-4 w-4 text-slate-600" />
                     </button>
 
-                    {/* Supprimer */}
                     <button
                       type="button"
                       onClick={() => onAskDelete(task.id)}
@@ -157,18 +174,20 @@ export default function TasksList({
                   </>
                 )}
 
-                {/* Toggle état */}
+                {/* ✅ Toggle état */}
                 {!isEditing && (
                   <button
                     type="button"
-                    onClick={() =>
-                      console.warn(
-                        "Brancher ici le callback toggleTask(task.id, task.is_done)"
-                      )
-                    }
-                    className={`inline-flex h-8 w-8 items-center justify-center rounded-md ${
+                    onClick={() => onToggleTask?.(task.id, task.is_done)}
+                    disabled={isTogglingThis}
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-md disabled:opacity-60 ${
                       task.is_done ? "hover:bg-amber-50" : "hover:bg-emerald-50"
                     }`}
+                    aria-label={
+                      task.is_done
+                        ? "Repasser en cours"
+                        : "Marquer comme terminée"
+                    }
                   >
                     {task.is_done ? (
                       <RotateCcw className="h-4 w-4 text-amber-600" />
@@ -178,15 +197,15 @@ export default function TasksList({
                   </button>
                 )}
 
-                {/* Confirm delete */}
                 {isConfirmDelete && (
-                  <div className="ml-2 flex items-center gap-1">
+                  <div className="flex items-center gap-1 ml-2">
                     <button
                       type="button"
                       onClick={onConfirmDelete}
-                      className="rounded-md bg-rose-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-rose-700"
+                      disabled={isDeletingThis}
+                      className="rounded-md bg-rose-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-rose-700 disabled:opacity-60"
                     >
-                      Supprimer
+                      {isDeletingThis ? "Suppression…" : "Supprimer"}
                     </button>
                     <button
                       type="button"

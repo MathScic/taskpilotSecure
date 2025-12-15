@@ -1,10 +1,11 @@
-import { PlusCircle } from "lucide-react";
+"use client";
 
-type NewTaskFormProps = {
+type Props = {
   title: string;
   onTitleChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
-  errorMessage?: string | null;
+  errorMessage: string | null;
+  submitting?: boolean; // ✅ new
 };
 
 export default function NewTaskForm({
@@ -12,43 +13,38 @@ export default function NewTaskForm({
   onTitleChange,
   onSubmit,
   errorMessage,
-}: NewTaskFormProps) {
+  submitting = false,
+}: Props) {
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex h-full flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-    >
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <h2 className="text-sm font-semibold text-slate-900">Nouvelle tâche</h2>
       <p className="mt-1 text-xs text-slate-500">
-        Créez une tâche à suivre dans votre espace sécurisé.
+        Ajoutez une tâche personnelle (limite gérée côté DB).
       </p>
 
       {errorMessage && (
-        <div className="mt-3 rounded-md bg-rose-50 px-3 py-2 text-[11px] text-rose-700">
+        <div className="mt-3 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">
           {errorMessage}
         </div>
       )}
 
-      <div className="mt-3 flex-1">
-        <label className="mb-1 block text-xs font-medium text-slate-700">
-          Titre de la tâche
-        </label>
+      <form onSubmit={onSubmit} className="mt-3 flex gap-2">
         <input
-          type="text"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="Ex : Faire une sauvegarde des données…"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          placeholder="Ex: Appeler le client, envoyer le devis…"
+          className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:opacity-60"
+          disabled={submitting}
         />
-      </div>
 
-      <button
-        type="submit"
-        className="mt-3 inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-      >
-        <PlusCircle className="h-4 w-4" />
-        <span>Ajouter</span>
-      </button>
-    </form>
+        <button
+          type="submit"
+          disabled={submitting || title.trim().length === 0}
+          className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+        >
+          {submitting ? "Ajout…" : "Ajouter"}
+        </button>
+      </form>
+    </section>
   );
 }

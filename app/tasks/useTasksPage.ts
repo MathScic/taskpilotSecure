@@ -30,6 +30,12 @@ export function useTasksPage() {
   const [editingTitle, setEditingTitle] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  // ✅ UI states (pro feedback)
+  const [adding, setAdding] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
   async function loadTasks() {
     setLoading(true);
     const { data, error } = await supabase
@@ -57,6 +63,9 @@ export function useTasksPage() {
     e.preventDefault();
     setErrorMessage(null);
 
+    if (adding) return;
+    setAdding(true);
+
     const now = Date.now();
 
     if (now - lastAddTime < 5000) {
@@ -67,6 +76,7 @@ export function useTasksPage() {
       await logEvent("warning", "Tentative d'ajout trop rapide de tâche", {
         since_last_add_seconds: diff,
       });
+      setAdding(false);
       return;
     }
 
@@ -79,6 +89,7 @@ export function useTasksPage() {
         raw_title: title,
         issues: parse.error.issues,
       });
+      setAdding(false);
       return;
     }
     const validTitle = parse.data;
@@ -89,6 +100,7 @@ export function useTasksPage() {
     if (!user) {
       setErrorMessage("Session expirée, merci de vous reconnecter.");
       await logEvent("error", "Aucune session utilisateur lors de l'ajout");
+      setAdding(false);
       return;
     }
 
@@ -126,6 +138,7 @@ export function useTasksPage() {
         }
       );
 
+      setAdding(false);
       return;
     }
 
@@ -134,11 +147,12 @@ export function useTasksPage() {
       title: data.title,
     });
 
-    // 1) On met à jour le state immédiatement
+    // ✅ update local direct
     setTasks((prev) => [data as Task, ...prev]);
 
-    // 2) On reset le champ
+    // ✅ reset champ
     setTitle("");
+    setAdding(false);
   }
 
   // ---------- EDIT ----------
@@ -158,6 +172,8 @@ export function useTasksPage() {
     if (!editingId) return;
 
     setErrorMessage(null);
+    if (saving) return;
+    setSaving(true);
 
     const parse = taskTitleSchema.safeParse(editingTitle);
     if (!parse.success) {
@@ -169,6 +185,7 @@ export function useTasksPage() {
         raw_title: editingTitle,
         issues: parse.error.issues,
       });
+      setSaving(false);
       return;
     }
     const validTitle = parse.data;
@@ -186,20 +203,23 @@ export function useTasksPage() {
         title: validTitle,
         error,
       });
+      setSaving(false);
       return;
     }
+
     await logEvent("info", "Tâche mise à jour", {
       task_id: editingId,
       new_title: validTitle,
     });
 
-    // mise à jour locale
+    // ✅ update local
     setTasks((prev) =>
       prev.map((t) => (t.id === editingId ? { ...t, title: validTitle } : t))
     );
 
     setEditingId(null);
     setEditingTitle("");
+    setSaving(false);
   }
 
   // ---------- DELETE ----------
@@ -213,6 +233,7 @@ export function useTasksPage() {
     if (!confirmDeleteId) return;
 
     setErrorMessage(null);
+    setDeletingId(confirmDeleteId);
 
     const { error } = await supabase
       .from("tasks")
@@ -226,18 +247,60 @@ export function useTasksPage() {
         task_id: confirmDeleteId,
         error,
       });
+      setDeletingId(null);
       return;
     }
+
     await logEvent("warning", "Tâche supprimée", { task_id: confirmDeleteId });
 
-    // on enlève la tâche localement
+    // ✅ remove local
     setTasks((prev) => prev.filter((t) => t.id !== confirmDeleteId));
 
     setConfirmDeleteId(null);
+    setDeletingId(null);
   }
 
   function cancelDelete() {
     setConfirmDeleteId(null);
+  }
+
+  async function toggleTask(taskId: string, currentIsDone: boolean) {
+    setErrorMessage(null);
+    setTogglingId(taskId);
+
+    // ✅ Optimistic UI
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, is_done: !currentIsDone } : t))
+    );
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ is_done: !currentIsDone })
+      .eq("id", taskId);
+
+    if (error) {
+      // rollback
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId ? { ...t, is_done: currentIsDone } : t
+        )
+      );
+
+      console.error("Erreur toggle task :", error);
+      setErrorMessage("Erreur serveur lors du changement d’état.");
+      await logEvent("error", "Échec toggle état tâche", {
+        task_id: taskId,
+        wanted_is_done: !currentIsDone,
+        error,
+      });
+    } else {
+      await logEvent("info", "État tâche modifié", {
+        task_id: taskId,
+        new_is_done: !currentIsDone,
+      });
+    }
+
+    setTogglingId(null);
   }
 
   return {
@@ -253,6 +316,11 @@ export function useTasksPage() {
     setEditingTitle,
     confirmDeleteId,
 
+    // ✅ UI states
+    adding,
+    saving,
+    deletingId,
+
     // actions
     handleAddTask,
     startEdit,
@@ -261,5 +329,7 @@ export function useTasksPage() {
     askDelete,
     confirmDelete,
     cancelDelete,
+    togglingId,
+    toggleTask,
   };
 }
